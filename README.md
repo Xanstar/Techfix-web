@@ -15,3 +15,5 @@ Segunda versión funcional del proyecto **Techfix**, basada en el código recibi
 - Añadir medios de pago.
 - Panel de administración para tickets y productos.
 - Mejoras en UI/UX y optimización general.
+## URL DE LA WEB
+- https://techfix-web.netlify.app
