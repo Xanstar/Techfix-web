@@ -754,7 +754,7 @@ const CartSection = () => {
     {paymentMethod === "mercadopago" && (
       <div className="space-y-3">
         <p className="text-cyan-400">
-          Se generará un enlace seguro para completar el pago mediante MercadoPago.
+          Se genero un enlace seguro para completar el pago mediante MercadoPago.
         </p>
 
         <a
