@@ -277,8 +277,6 @@ const CircuitBorder = ({ children, className = "" }) => (
 
 // --- APP PRINCIPAL ---
 export default function PublicApp() {
-
-  
     
   const [activeSection, setActiveSection] = useState('home');
   const [cart, setCart] = useState([]);
@@ -328,13 +326,6 @@ if (mailError) {
 
 return data;
 };
-
-  useEffect(() => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  });
-}, [activeSection]);
 
   // 🔹 HANDLER DEL FORM
  const [confirmationMessage, setConfirmationMessage] = useState('');
@@ -654,243 +645,52 @@ const addToCart = (product) => {
       </div>
     </section>
   );
+  const CartSection = () => (
+  <section className="min-h-screen bg-slate-950 px-4 py-24">
+    <div className="max-w-4xl mx-auto font-mono text-white">
+      <h2 className="text-3xl mb-8 border-b border-cyan-500 pb-2">
+        CARRITO_DE_COMPRAS
+      </h2>
 
+      {cart.length === 0 ? (
+        <p className="text-cyan-700">No hay productos cargados.</p>
+      ) : (
+        <div className="space-y-4">
+          {cart.map(item => (
+            <div key={item.id} className="flex gap-4 bg-slate-900 p-4 border border-cyan-900">
+              <img src={item.image} className="w-20 h-20 object-cover" />
 
-
-
-const CartSection = () => {
-  
-  const [paymentMethod, setPaymentMethod] = useState("tarjeta");
-
-  const [showCmd, setShowCmd] = useState(false);
-  const [cmdLines, setCmdLines] = useState([]);
-
-  const ejecutarPago = () => {
-    setShowCmd(true);
-    setCmdLines([]);
-
-    const secuencia = [
-      "> iniciando_transacción...",
-      "> conectando_con_pasarela_de_pago...",
-      "> esperando_confirmación...",
-      "",
-      "PAGO_APROBADO ✓",
-      "La orden ha sido confirmada.",
-      "Gracias por su compra."
-    ];
-
-    secuencia.forEach((linea, i) => {
-      setTimeout(() => {
-        setCmdLines(prev => [...prev, linea]);
-      }, i * 900);
-    });
-  };
-
-  return (
-    <section className="min-h-screen bg-slate-950 px-6 py-28 font-mono">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {/* ================= IZQUIERDA ================= */}
-        <div className="lg:col-span-2 space-y-8">
-
-          {/* DATOS CLIENTE */}
-          <div className="relative bg-slate-900/60 border border-cyan-900/40 p-6 shadow-[0_0_40px_rgba(6,182,212,0.08)]">
-            <h3 className="text-cyan-400 text-xs tracking-widest mb-6">
-              {"> DATOS_DEL_CLIENTE"}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                className="bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500 focus:shadow-[0_0_10px_rgba(6,182,212,0.25)]"
-                placeholder="NOMBRE_COMPLETO_"
-              />
-              <input
-                className="bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-                placeholder="EMAIL_"
-              />
-            </div>
-
-            <input
-              className="mt-4 w-full bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-              placeholder="TELÉFONO_"
-            />
-          </div>
-
-{/* MÉTODO DE PAGO */}
-<div className="relative bg-slate-900/60 border border-cyan-900/40 p-6">
-  <h3 className="text-cyan-400 text-xs tracking-widest mb-6">
-    {"> MÉTODO_DE_PAGO"}
-  </h3>
-
-  <div className="grid grid-cols-3 gap-4">
-    {["tarjeta", "mercadopago", "transferencia"].map(method => (
-      <button
-        key={method}
-        onClick={() => setPaymentMethod(method)}
-        className={`py-4 border text-xs tracking-widest transition-all ${
-          paymentMethod === method
-            ? "bg-cyan-500 text-slate-950 border-cyan-400"
-            : "bg-slate-950 text-cyan-400 border-cyan-900 hover:border-cyan-500"
-        }`}
-      >
-        {method.toUpperCase()}
-      </button>
-    ))}
-  </div>
-
-  {/* ================= CONTENIDO DINÁMICO ================= */}
-  <div className="mt-6 border-t border-cyan-900/40 pt-4 text-xs">
-
-    {/* TARJETA */}
-    {paymentMethod === "tarjeta" && (
-      <div className="space-y-4">
-        <p className="text-cyan-400">
-          Ingrese los datos de la tarjeta para continuar con el pago.
-        </p>
-
-        <input
-          className="w-full bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-          placeholder="NÚMERO_DE_TARJETA_"
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            className="bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-            placeholder="MM / AA"
-          />
-          <input
-            className="bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-            placeholder="CVV"
-          />
-        </div>
-
-        <input
-          className="w-full bg-slate-950 border border-cyan-900/50 text-cyan-300 px-4 py-3 text-sm outline-none focus:border-cyan-500"
-          placeholder="NOMBRE_DEL_TITULAR_"
-        />
-      </div>
-    )}
-
-    {/* MERCADOPAGO */}
-    {paymentMethod === "mercadopago" && (
-      <div className="space-y-3">
-        <p className="text-cyan-400">
-          Se genero un enlace seguro para completar el pago mediante MercadoPago.
-        </p>
-
-        <a
-          href="https://www.mercadopago.com.ar/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950 transition-all tracking-widest"
-        >
-          IR_A_MERCADOPAGO {'>'}
-        </a>
-      </div>
-    )}
-
-    {/* TRANSFERENCIA */}
-    {paymentMethod === "transferencia" && (
-      <div className="space-y-3">
-        <p className="text-cyan-400">
-          Datos bancarios para realizar la transferencia:
-        </p>
-
-        <div className="bg-slate-950 border border-cyan-900/50 p-4 space-y-1 text-cyan-300">
-          <p><span className="text-cyan-500">BANCO:</span> Banco Nación</p>
-          <p><span className="text-cyan-500">CUENTA:</span> Caja de Ahorro</p>
-          <p><span className="text-cyan-500">CBU:</span> 0000000000000000000000</p>
-          <p><span className="text-cyan-500">ALIAS:</span> TECHFIX.PAGOS</p>
-          <p><span className="text-cyan-500">TITULAR:</span> TechFix Systems</p>
-        </div>
-
-        <button
-          onClick={() => navigator.clipboard.writeText("0000000000000000000000")}
-          className="text-cyan-500 text-xs hover:underline"
-        >
-          COPIAR_CBU
-        </button>
-      </div>
-    )}
-
-  </div>
-</div>
-
-
-        </div>
-
-        {/* ================= DERECHA ================= */}
-        <div className="relative bg-slate-900/60 border border-cyan-900/40 p-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-cyan-400 text-xs tracking-widest mb-6">
-              {"> RESUMEN_DE_ORDEN"}
-            </h3>
-
-            {cart.map(item => (
-              <div key={item.id} className="flex justify-between text-sm text-cyan-300 mb-2">
-                <span>{item.name} x{item.quantity}</span>
-                <span>{formatPrice(item.price * item.quantity)}</span>
+              <div className="flex-1">
+                <h3 className="font-bold text-cyan-400">{item.name}</h3>
+                <p className="text-sm text-slate-400">{item.desc}</p>
+                <p className="mt-1">{formatPrice(item.price)} x {item.quantity}</p>
               </div>
-            ))}
 
-            <div className="border-t border-cyan-900/50 mt-4 pt-4 flex justify-between text-cyan-400 font-bold">
-              <span>TOTAL</span>
-              <span>{formatPrice(getTotal())}</span>
-            </div>
-          </div>
-
-     {paymentMethod === "tarjeta" && (
-  <button
-    onClick={ejecutarPago}
-    className="mt-8 py-4 bg-cyan-500 text-slate-950 font-bold tracking-widest hover:bg-cyan-400 transition-all"
-  >
-    EJECUTAR_PAGO_
-  </button>
-)}
-
-        </div>
-      </div>
-
-      {showCmd && <FakeCMD lines={cmdLines} onClose={() => setShowCmd(false)} />}
-    </section>
-  );
-};
-
-
-
-
-const FakeCMD = ({ lines, onClose }) => {
-  return (
-    <div className="fixed inset-0 bg-black/80 z-[90] flex items-center justify-center">
-      <div className="w-[720px] bg-black border border-gray-600 shadow-2xl">
-
-        {/* BARRA SUPERIOR */}
-        <div className="flex justify-between items-center px-3 py-1 bg-gray-800 text-gray-200 text-xs">
-          <span>C:\Windows\System32\cmd.exe</span>
-          <button
-            onClick={onClose}
-            className="hover:text-red-400 transition"
-          >
-            X
-          </button>
-        </div>
-
-        {/* TERMINAL */}
-        <div className="p-4 text-green-500 text-sm font-mono min-h-[260px] space-y-2">
-          {lines.map((line, i) => (
-            <div key={i}>
-              {line}
+              <button
+                onClick={() => removeFromCart(item.id)}
+                className="text-red-500 hover:text-red-400"
+              >
+                X
+              </button>
             </div>
           ))}
-          <span className="animate-pulse">_</span>
+
+          <div className="flex justify-between text-xl border-t border-cyan-900 pt-4">
+            <span>TOTAL</span>
+            <span className="text-cyan-400">{formatPrice(getTotal())}</span>
+          </div>
+
+          <button
+            onClick={handleCheckout}
+            className="w-full bg-green-500 text-black py-4 font-bold mt-6"
+          >
+            REALIZAR COMPRA
+          </button>
         </div>
-      </div>
+      )}
     </div>
-  );
-};
-
-
-
+  </section>
+);
 
  const ServicesSection = ({ setActiveSection, setSelectedIssue }) => {
   return (
@@ -955,16 +755,9 @@ const FakeCMD = ({ lines, onClose }) => {
             </div>
             <h2 className="text-3xl font-mono font-bold text-white">SOLUCIONES_DE_SEGURIDAD</h2>
           </div>
-          <button
-  onClick={() => {
-    setActiveSection('tienda');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }}
-  className="px-6 py-2 border border-green-600 text-green-500 hover:bg-green-500 hover:text-slate-950 font-mono text-xs transition-colors"
->
-  VER_CATÁLOGO {'>'}
-</button>
-
+          <button onClick={() => setActiveSection('tienda')} className="px-6 py-2 border border-green-600 text-green-500 hover:bg-green-500 hover:text-slate-950 font-mono text-xs transition-colors">
+            VER_CATÁLOGO {'>'}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1009,6 +802,13 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
                 required
                 className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900"
               />
+                <input
+                name="email"
+                type="email"
+                placeholder="EMAIL_CONTACTO"
+                required
+                className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900"
+                />
 
               <input
                 name="phone"
@@ -1097,22 +897,13 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 font-sans selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden">
-
+    <div className="min-h-screen bg-slate-950 font-sans selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden">
       <Navbar />
-      <main className="flex-1 pt-24">
-
-
-
-
+      <main>
         {activeSection === 'home' && (
           <>
             <Hero />
-            <ServicesSection 
-  setActiveSection={setActiveSection} 
-  setSelectedIssue={setSelectedIssue} 
-/>
-
+            <ServicesSection />
             <SecuritySection />
             <ContactSection />
           </>
@@ -1134,10 +925,8 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
         {activeSection === 'carrito' && <CartSection />} 
       </main>
       
-      <footer className="bg-slate-950 py-8 text-center border-t border-cyan-900/30 relative overflow-hidden">
-
+      <footer className="bg-slate-950 py-8 text-center border-t border-cyan-900/30 relative">
         <MatrixRain />
-        
         <div className="relative z-10 font-mono text-xs text-cyan-800">
           <p>ID SISTEMA: TECHFIX_2025 // ESTADO: ONLINE</p>
         </div>
@@ -1188,7 +977,5 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
         </button>
       </div>
     </div>
-    
   );
   }
-
