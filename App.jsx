@@ -301,7 +301,7 @@ const CircuitBorder = ({ children, className = "" }) => (
   </div>
 );
 
-export default function App() {
+export default function PublicApp() {
   const [activeSection, setActiveSection] = useState('home');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
