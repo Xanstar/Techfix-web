@@ -1,0 +1,18 @@
+# Supabase
+.branches
+.temp
+
+# Supabase CLI
+supabase.exe
+
+# dotenvx / envs
+.env
+.env.keys
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+
+# Node
+node_modules/

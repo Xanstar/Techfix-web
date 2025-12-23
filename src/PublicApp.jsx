@@ -286,27 +286,46 @@ export default function PublicApp() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('Todos');
    const createTicket = async (formData) => {
-    const ticketCode = `TFX-${Date.now()}`;
+  const ticketCode = `TFX-${Date.now()}`;
 
-    const { data, error } = await supabase
-      .from('tickets')
-      .insert({
-        ticket_code: ticketCode,
-        customer_name: formData.name,
-        phone: formData.phone,
-        issue_type: formData.issue,
-        description: formData.message
-      })
-      .select()
-      .single();
+  const { data, error } = await supabase
+  .from('tickets')
+  .insert({
+    ticket_code: ticketCode,
+    customer_name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    issue_type: formData.issue,
+    description: formData.message,
+    status: 'recibido'
+  })
+  .select()
+  .single();
 
-    if (error) {
-      console.error('❌ ERROR SUPABASE:', error);
-      throw error;
+if (error) {
+  console.error('❌ ERROR SUPABASE:', error);
+  throw error;
+}
+
+// 📩 enviar mail
+const { error: mailError } = await supabase.functions.invoke(
+  "send-ticket-email",
+  {
+    body: {
+      email: data.email,
+      ticket_code: data.ticket_code,
+      issue_type: data.issue_type,
+      status: data.status
     }
+  }
+);
 
-    return data;
-  };
+if (mailError) {
+  console.error("⚠️ Error enviando mail:", mailError);
+}
+
+return data;
+};
 
   // 🔹 HANDLER DEL FORM
  const [confirmationMessage, setConfirmationMessage] = useState('');
@@ -316,8 +335,9 @@ const handleSubmit = async (e) => {
 
   const formData = {
     name: e.target.name.value,
+    email: e.target.email.value, 
     phone: e.target.phone.value,
-    issue: selectedIssue, // 👈 SERVICIO ELEGIDO
+    issue: selectedIssue,
     message: e.target.message.value
   };
 
@@ -330,6 +350,7 @@ const handleSubmit = async (e) => {
     setConfirmationMessage('❌ Error al crear el ticket');
   }
 };
+
 
   
   
