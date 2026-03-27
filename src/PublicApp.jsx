@@ -6,7 +6,10 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURACIÓN GEMINI API ---
-const apiKey = ""; // La clave se inyectará automáticamente en el entorno de ejecución
+const apiKey =
+  typeof import.meta !== "undefined" && import.meta.env?.VITE_GEMINI_API_KEY
+    ? import.meta.env.VITE_GEMINI_API_KEY
+    : "";
 
 const callGemini = async (prompt, systemInstruction = "") => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
@@ -368,6 +371,10 @@ const handleSubmit = async (e) => {
   const filteredProducts = categoryFilter === 'Todos' ? PRODUCTS : PRODUCTS.filter(p => p.category === categoryFilter);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeSection]);
+
+  useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isTyping]);
 
@@ -449,38 +456,52 @@ const addToCart = (product) => {
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveSection('home')}>
+          <button
+            type="button"
+            onClick={() => setActiveSection("home")}
+            className="group flex cursor-pointer items-center gap-3 rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+          >
             <div className="relative">
               <div className="absolute inset-0 bg-cyan-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity"></div>
               <Cpu className="text-cyan-400 w-10 h-10 relative z-10" />
             </div>
             <div className="flex flex-col font-mono">
-              <span className="font-bold text-xl tracking-widest text-white leading-none">TECH<span className="text-cyan-400">FIX</span>_</span>
-              <span className="text-[10px] text-cyan-600 tracking-[0.3em]">SYSTEMS.INC</span>
+              <span className="text-xl font-bold leading-none tracking-widest text-white">
+                TECH<span className="text-cyan-400">FIX</span>_
+              </span>
+              <span className="text-[10px] tracking-[0.3em] text-cyan-600">SYSTEMS.INC</span>
             </div>
-          </div>
-          
+          </button>
+
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-2 bg-slate-900/50 p-1 rounded border border-cyan-900/30">
-              {['Home', 'Servicios', 'Seguridad', 'Tienda', 'Contacto'].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setActiveSection(item.toLowerCase())}
-                  className={`px-4 py-2 text-xs font-mono font-bold tracking-wide transition-all duration-300 relative overflow-hidden group ${
-                    activeSection === item.toLowerCase() 
-                    ? 'text-slate-950 bg-cyan-500 clip-path-slant' 
-                    : 'text-cyan-500 hover:text-cyan-300 hover:bg-cyan-950/30'
-                  }`}
-                >
-                  <span className="relative z-10">{`[ ${item.toUpperCase()} ]`}</span>
-                </button>
-              ))}
+            <div className="ml-10 flex items-baseline space-x-2 rounded border border-cyan-900/30 bg-slate-900/50 p-1">
+              {["Home", "Servicios", "Seguridad", "Tienda", "Contacto"].map((item) => {
+                const id = item.toLowerCase();
+                const isActive = activeSection === id;
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => setActiveSection(id)}
+                    className={`rounded-md px-4 py-2.5 font-mono text-xs font-bold tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+                      isActive
+                        ? "clip-path-slant bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.35)]"
+                        : "text-cyan-400/90 hover:bg-cyan-950/50 hover:text-cyan-300"
+                    }`}
+                  >
+                    <span className="relative z-10">{`[ ${item.toUpperCase()} ]`}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
-              className="relative p-2 text-cyan-500 hover:text-white transition-colors border border-cyan-900/50 hover:border-cyan-500 bg-slate-900/50 rounded"
+            <button
+              type="button"
+              aria-label="Abrir carrito"
+              className="relative rounded-md border border-cyan-800/60 bg-slate-900/80 p-2.5 text-cyan-400 transition-colors hover:border-cyan-500 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingCart className="w-5 h-5" />
@@ -491,8 +512,14 @@ const addToCart = (product) => {
               )}
             </button>
             <div className="md:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-cyan-500">
-                <Menu className="w-6 h-6" />
+              <button
+                type="button"
+                aria-expanded={mobileMenuOpen}
+                aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="rounded-md p-2 text-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              >
+                <Menu className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -501,11 +528,15 @@ const addToCart = (product) => {
       
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-950 border-b border-cyan-900 pb-4 px-4 font-mono">
-          {['Home', 'Servicios', 'Seguridad', 'Tienda', 'Contacto'].map((item) => (
+          {["Home", "Servicios", "Seguridad", "Tienda", "Contacto"].map((item) => (
             <button
               key={item}
-              onClick={() => { setActiveSection(item.toLowerCase()); setMobileMenuOpen(false); }}
-              className="block w-full text-left px-3 py-3 text-sm text-cyan-500 hover:bg-cyan-900/20 border-l-2 border-transparent hover:border-cyan-500 mt-1"
+              type="button"
+              onClick={() => {
+                setActiveSection(item.toLowerCase());
+                setMobileMenuOpen(false);
+              }}
+              className="mt-1 block w-full rounded-r border-l-2 border-transparent px-3 py-3 text-left text-sm text-cyan-400 hover:border-cyan-500 hover:bg-cyan-950/40 focus:outline-none focus-visible:bg-cyan-950/50"
             >
               {`> ${item.toUpperCase()}`}
             </button>
@@ -560,13 +591,23 @@ const addToCart = (product) => {
             <div className="h-8">{line3.text} {line2.isComplete && <BlinkingCursor/>}</div>
           </div>
           
-          <div className={`flex flex-col sm:flex-row gap-6 justify-center transition-opacity duration-1000 ${line3.isComplete ? 'opacity-100' : 'opacity-0'}`}>
-            <button onClick={() => setActiveSection('tienda')} className="group relative px-8 py-4 bg-cyan-600/10 overflow-hidden font-mono font-bold text-cyan-400 border border-cyan-500 hover:bg-cyan-500 hover:text-slate-950 transition-all clip-path-slant">
-              <span className="absolute inset-0 w-full h-full bg-cyan-400/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12"></span>
-              ACCESS STORE_
+          <div
+            className={`flex flex-col justify-center gap-4 transition-opacity duration-700 sm:flex-row sm:gap-5 ${line3.isComplete ? "opacity-100" : "pointer-events-none opacity-0"}`}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveSection("tienda")}
+              className="clip-path-slant group relative min-h-[52px] overflow-hidden border border-cyan-500/80 bg-gradient-to-br from-cyan-600/20 to-slate-900/80 px-10 py-3.5 font-mono text-sm font-bold text-cyan-200 shadow-[0_0_24px_rgba(6,182,212,0.15)] transition hover:border-cyan-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              <span className="absolute inset-0 -translate-x-full bg-cyan-400/25 transition group-hover:translate-x-0" />
+              <span className="relative">Ver tienda</span>
             </button>
-            <button onClick={() => setActiveSection('seguridad')} className="group px-8 py-4 bg-slate-900 text-green-400 font-mono font-bold border border-green-500/50 hover:border-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all clip-path-slant">
-              SECURITY MODULE_
+            <button
+              type="button"
+              onClick={() => setActiveSection("seguridad")}
+              className="clip-path-slant min-h-[52px] border border-emerald-500/50 bg-slate-900/90 px-10 py-3.5 font-mono text-sm font-bold text-emerald-400 transition hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(52,211,153,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              Seguridad
             </button>
           </div>
         </div>
@@ -631,11 +672,13 @@ const addToCart = (product) => {
                   <span className="text-lg font-mono font-bold text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]">
                     {formatPrice(product.price)}
                   </span>
-                  <button 
+                  <button
+                    type="button"
+                    aria-label={`Agregar ${product.name} al carrito`}
                     onClick={() => addToCart(product)}
-                    className="p-2 bg-cyan-950 border border-cyan-600 text-cyan-400 hover:bg-cyan-400 hover:text-slate-950 transition-colors"
+                    className="rounded-md border border-cyan-600 bg-cyan-950 p-2.5 text-cyan-400 transition hover:bg-cyan-400 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                   >
-                    <ShoppingCart size={16} />
+                    <ShoppingCart size={16} aria-hidden />
                   </button>
                 </div>
               </div>
@@ -667,6 +710,7 @@ const addToCart = (product) => {
               </div>
 
               <button
+                type="button"
                 onClick={() => removeFromCart(item.id)}
                 className="text-red-500 hover:text-red-400"
               >
@@ -681,10 +725,11 @@ const addToCart = (product) => {
           </div>
 
           <button
+            type="button"
             onClick={handleCheckout}
-            className="w-full bg-green-500 text-black py-4 font-bold mt-6"
+            className="mt-6 w-full bg-emerald-500 py-4 font-bold text-slate-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           >
-            REALIZAR COMPRA
+            Coordinar por WhatsApp
           </button>
         </div>
       )}
@@ -694,19 +739,23 @@ const addToCart = (product) => {
 
  const ServicesSection = ({ setActiveSection, setSelectedIssue }) => {
   return (
-    <section className="py-20 bg-slate-950 px-4 relative border-t border-cyan-900/20">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 relative">
-          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-cyan-900/50 -z-10"></div>
-          <span className="bg-slate-950 px-4 text-2xl font-mono font-bold text-white border border-cyan-900 inline-block py-2">
-            SERVICIOS_PRINCIPALES
+    <section className="relative border-t border-cyan-900/20 bg-slate-950 px-4 py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="relative mb-16 text-center">
+          <div className="absolute top-1/2 left-0 -z-10 h-[1px] w-full bg-cyan-900/50" />
+          <span className="inline-block border border-cyan-800/80 bg-slate-950 px-6 py-2.5 font-mono text-xl font-bold text-white shadow-[0_0_30px_rgba(6,182,212,0.08)]">
+            Servicios
           </span>
+          <p className="mx-auto mt-4 max-w-2xl font-mono text-sm text-cyan-700/90">
+            Reparación, ensamblaje y redes. Solicitá presupuesto y te respondemos por el canal que elijas.
+          </p>
         </div>
 
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {SERVICES.map((service) => (
           <div
             key={service.id}
-            className="relative group bg-slate-900 p-6 border border-cyan-900/50 hover:border-cyan-500 transition-all overflow-hidden"
+            className="group relative overflow-hidden rounded-xl border border-cyan-900/50 bg-slate-900/90 p-6 transition hover:border-cyan-500/60 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity">
               <Zap className="text-cyan-500 w-16 h-16 -mr-4 -mt-4" />
@@ -724,20 +773,21 @@ const addToCart = (product) => {
               {service.desc}
             </p>
 
-            {/* 🔥 BOTÓN SOLICITAR SERVICIO */}
             <button
+              type="button"
               onClick={() => {
-                setSelectedIssue(service.title); // Establecer el servicio seleccionado
-                setActiveSection('contacto'); // Cambiar a la sección de contacto
+                setSelectedIssue(service.title);
+                setActiveSection("contacto");
               }}
-              className="w-full border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950 transition-all py-2 font-mono text-xs"
+              className="w-full rounded-md border border-cyan-800 bg-cyan-950/30 py-2.5 font-mono text-xs font-bold text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             >
-              SOLICITAR_SERVICIO
+              Solicitar servicio
             </button>
 
-            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-500 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+            <div className="absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 bg-gradient-to-r from-cyan-500 to-transparent transition-transform group-hover:scale-x-100" />
           </div>
         ))}
+        </div>
       </div>
     </section>
   );
@@ -755,8 +805,12 @@ const addToCart = (product) => {
             </div>
             <h2 className="text-3xl font-mono font-bold text-white">SOLUCIONES_DE_SEGURIDAD</h2>
           </div>
-          <button onClick={() => setActiveSection('tienda')} className="px-6 py-2 border border-green-600 text-green-500 hover:bg-green-500 hover:text-slate-950 font-mono text-xs transition-colors">
-            VER_CATÁLOGO {'>'}
+          <button
+            type="button"
+            onClick={() => setActiveSection("tienda")}
+            className="rounded-md border border-emerald-600 px-6 py-2.5 font-mono text-xs font-bold text-emerald-400 transition hover:bg-emerald-500 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          >
+            Ver catálogo →
           </button>
         </div>
 
@@ -773,65 +827,81 @@ const addToCart = (product) => {
     </section>
   );
 
-const ContactSection = ({ selectedIssue, handleSubmit }) => (
-  <section className="py-20 bg-slate-950 px-4 border-t border-slate-900 relative">
-    <div className="max-w-3xl mx-auto">
-      <div className="bg-slate-900 border border-cyan-900/50 p-1 relative">
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-cyan-500"></div>
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-cyan-500"></div>
+const ContactSection = ({ selectedIssue, handleSubmit, confirmationMessage }) => (
+  <section className="relative border-t border-slate-900 bg-slate-950 px-4 py-20">
+    <div className="mx-auto max-w-3xl">
+      <div className="relative border border-cyan-900/50 bg-slate-900 p-1">
+        <div className="absolute -top-1 -left-1 h-4 w-4 border-l-2 border-t-2 border-cyan-500" />
+        <div className="absolute -top-1 -right-1 h-4 w-4 border-r-2 border-t-2 border-cyan-500" />
+        <div className="absolute -bottom-1 -left-1 h-4 w-4 border-b-2 border-l-2 border-cyan-500" />
+        <div className="absolute -bottom-1 -right-1 h-4 w-4 border-b-2 border-r-2 border-cyan-500" />
 
-        <div className="bg-slate-950 p-8 border border-cyan-900/30">
-          <h2 className="text-2xl font-mono font-bold text-white mb-6 text-center text-glitch">
-            ESTABLECER_CONEXIÓN
+        <div className="border border-cyan-900/30 bg-slate-950 p-8">
+          <h2 className="text-glitch mb-2 text-center font-mono text-2xl font-bold text-white">
+            Contacto y tickets
           </h2>
+          <p className="mb-8 text-center font-mono text-xs text-cyan-700">
+            Completá el formulario. Te enviamos un código de seguimiento por email.
+          </p>
 
-          {/* 🔹 SERVICIO SELECCIONADO */}
+          {confirmationMessage && (
+            <div
+              className="mb-6 rounded-md border border-emerald-600/50 bg-emerald-950/30 px-4 py-3 font-mono text-sm text-emerald-300"
+              role="status"
+              aria-live="polite"
+            >
+              {confirmationMessage}
+            </div>
+          )}
+
           {selectedIssue && (
-            <div className="mb-6 p-3 border border-cyan-500 text-cyan-300 text-sm bg-slate-900 font-mono">
-              <span className="text-cyan-500">SERVICIO_SELECCIONADO:</span>{" "}
-              {selectedIssue}
+            <div className="mb-6 rounded-md border border-cyan-600/40 bg-cyan-950/30 p-3 font-mono text-sm text-cyan-200">
+              <span className="text-cyan-500">Servicio:</span> {selectedIssue}
             </div>
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <input
                 name="name"
                 type="text"
-                placeholder="ID_USUARIO"
+                placeholder="Nombre"
                 required
-                className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900"
+                autoComplete="name"
+                className="w-full rounded-md border border-cyan-900/80 bg-slate-900 px-4 py-3 font-mono text-sm text-cyan-100 placeholder:text-cyan-800 outline-none focus:border-cyan-500"
               />
-                <input
+              <input
                 name="email"
                 type="email"
-                placeholder="EMAIL_CONTACTO"
+                placeholder="Email"
                 required
-                className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900"
-                />
+                autoComplete="email"
+                className="w-full rounded-md border border-cyan-900/80 bg-slate-900 px-4 py-3 font-mono text-sm text-cyan-100 placeholder:text-cyan-800 outline-none focus:border-cyan-500"
+              />
 
               <input
                 name="phone"
-                type="text"
-                placeholder="FRECUENCIA_COMMS (Teléfono)"
+                type="tel"
+                placeholder="Teléfono / WhatsApp"
                 required
-                className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900"
+                autoComplete="tel"
+                className="w-full rounded-md border border-cyan-900/80 bg-slate-900 px-4 py-3 font-mono text-sm text-cyan-100 placeholder:text-cyan-800 outline-none focus:border-cyan-500 md:col-span-2"
               />
             </div>
 
             <textarea
               name="message"
-              placeholder="INGRESAR_DATOS..."
+              placeholder="Contanos el problema o consulta..."
               rows="4"
               required
-              className="bg-slate-900 border-b border-cyan-900 text-cyan-400 w-full px-4 py-3 outline-none focus:border-cyan-500 font-mono text-sm placeholder-cyan-900 resize-none"
-            ></textarea>
+              className="w-full resize-none rounded-md border border-cyan-900/80 bg-slate-900 px-4 py-3 font-mono text-sm text-cyan-100 placeholder:text-cyan-800 outline-none focus:border-cyan-500"
+            />
 
             <button
               type="submit"
-              className="w-full bg-cyan-900/20 border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950 font-mono font-bold py-3 transition-all tracking-widest"
+              className="w-full rounded-md border border-cyan-500 bg-cyan-600/20 py-3.5 font-mono text-sm font-bold tracking-wide text-cyan-100 transition hover:bg-cyan-500 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             >
-              TRANSMITIR
+              Enviar ticket
             </button>
           </form>
         </div>
@@ -840,15 +910,35 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
   </section>
 );
   const CartModal = () => (
-    <div className={`fixed inset-0 z-[60] ${isCartOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-      <div className={`absolute inset-0 bg-slate-950/90 backdrop-blur-sm transition-opacity ${isCartOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setIsCartOpen(false)} />
-      <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-slate-900 border-l border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.2)] transform transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-6 h-full flex flex-col font-mono">
-          <div className="flex justify-between items-center mb-6 pb-6 border-b border-cyan-900/50">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-cyan-500">{'>'}</span> CARRITO_ACTUAL
+    <div
+      className={`fixed inset-0 z-[60] ${isCartOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+      role="presentation"
+    >
+      <button
+        type="button"
+        aria-label="Cerrar carrito"
+        className={`absolute inset-0 z-0 bg-slate-950/90 backdrop-blur-sm transition-opacity ${isCartOpen ? "opacity-100" : "opacity-0"}`}
+        onClick={() => setIsCartOpen(false)}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-title"
+        className={`pointer-events-auto absolute top-0 right-0 z-10 h-full w-full max-w-md transform border-l border-cyan-500 bg-slate-900 shadow-[0_0_50px_rgba(6,182,212,0.2)] transition-transform duration-300 ${isCartOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className="flex h-full flex-col p-6 font-mono">
+          <div className="mb-6 flex items-center justify-between border-b border-cyan-900/50 pb-6">
+            <h2 id="cart-title" className="flex items-center gap-2 text-xl font-bold text-white">
+              <span className="text-cyan-500">{'>'}</span> Carrito
             </h2>
-            <button onClick={() => setIsCartOpen(false)} className="text-cyan-500 hover:text-white"><X size={20} /></button>
+            <button
+              type="button"
+              onClick={() => setIsCartOpen(false)}
+              className="rounded p-1 text-cyan-500 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              aria-label="Cerrar"
+            >
+              <X size={20} />
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
             {cart.length === 0 ? (
@@ -867,7 +957,14 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
                     <p className="text-white font-bold text-sm">{formatPrice(item.price)}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-cyan-700 text-xs">CANT: {item.quantity}</span>
-                      <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-400"><Trash2 size={14} /></button>
+                      <button
+                        type="button"
+                        aria-label="Quitar del carrito"
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 hover:text-red-400"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -881,13 +978,14 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
                 <span className="text-2xl font-bold text-cyan-400">{formatPrice(getTotal())}</span>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setIsCartOpen(false);
-                  setActiveSection('carrito'); // te lleva a la página checkout
+                  setActiveSection("carrito");
                 }}
-                className="w-full bg-green-600 hover:bg-green-500 text-slate-950 font-bold py-4 flex items-center justify-center gap-2 transition-all"
+                className="flex w-full items-center justify-center gap-2 bg-emerald-600 py-4 font-bold text-slate-950 transition hover:bg-emerald-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               >
-                FINALIZAR_COMPRA
+                Ir al checkout
               </button>
             </div>
           )}
@@ -900,36 +998,43 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
     <div className="min-h-screen bg-slate-950 font-sans selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden">
       <Navbar />
       <main>
-        {activeSection === 'home' && (
+        {activeSection === "home" && (
           <>
             <Hero />
-            <ServicesSection />
+            <ServicesSection
+              setActiveSection={setActiveSection}
+              setSelectedIssue={setSelectedIssue}
+            />
             <SecuritySection />
-            <ContactSection />
+            <ContactSection
+              selectedIssue={selectedIssue}
+              handleSubmit={handleSubmit}
+              confirmationMessage={confirmationMessage}
+            />
           </>
         )}
-         {activeSection === 'servicios' && (
-    <ServicesSection 
-      setActiveSection={setActiveSection} 
-      setSelectedIssue={setSelectedIssue} 
-    />
-  )}
-        {activeSection === 'seguridad' && <SecuritySection />}
-        {activeSection === 'tienda' && <StoreSection addToCart={addToCart} />}
-        {activeSection === 'contacto' && (
-  <ContactSection
-    selectedIssue={selectedIssue}
-    handleSubmit={handleSubmit}
-  />
-)}
-        {activeSection === 'carrito' && <CartSection />} 
+        {activeSection === "servicios" && (
+          <ServicesSection
+            setActiveSection={setActiveSection}
+            setSelectedIssue={setSelectedIssue}
+          />
+        )}
+        {activeSection === "seguridad" && <SecuritySection />}
+        {activeSection === "tienda" && <StoreSection addToCart={addToCart} />}
+        {activeSection === "contacto" && (
+          <ContactSection
+            selectedIssue={selectedIssue}
+            handleSubmit={handleSubmit}
+            confirmationMessage={confirmationMessage}
+          />
+        )}
+        {activeSection === "carrito" && <CartSection />}
       </main>
       
-      <footer className="bg-slate-950 py-8 text-center border-t border-cyan-900/30 relative">
-        <MatrixRain />
-        <div className="relative z-10 font-mono text-xs text-cyan-800">
-          <p>ID SISTEMA: TECHFIX_2025 // ESTADO: ONLINE</p>
-        </div>
+      <footer className="border-t border-cyan-900/40 bg-slate-950 py-10 text-center">
+        <p className="font-mono text-xs text-cyan-700">
+          TECHFIX · {new Date().getFullYear()} · Soporte técnico y productos
+        </p>
       </footer>
 
       <CartModal />
@@ -941,7 +1046,9 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
           <div className="absolute bottom-16 right-0 w-80 bg-slate-900 border border-cyan-500/50 flex flex-col h-96 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
             <div className="bg-slate-950 p-3 border-b border-cyan-900 flex justify-between items-center">
               <span className="text-cyan-400 font-mono text-xs font-bold blinking-cursor">ASISTENTE_IA_V1</span>
-              <button onClick={() => setIsChatOpen(false)}><X size={14} className="text-cyan-700" /></button>
+              <button type="button" onClick={() => setIsChatOpen(false)} className="rounded p-1 text-cyan-700 hover:text-cyan-400">
+                <X size={14} />
+              </button>
             </div>
             <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-950/90 font-mono">
               {chatMessages.map((msg, idx) => (
@@ -967,15 +1074,23 @@ const ContactSection = ({ selectedIssue, handleSubmit }) => (
             </div>
             <div className="p-3 bg-slate-950 border-t border-cyan-900 flex gap-2">
               <input type="text" value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="CMD..." className="flex-1 bg-slate-900 border border-cyan-900 text-cyan-400 text-xs px-3 outline-none focus:border-cyan-500 font-mono" />
-              <button onClick={handleSendMessage} className="p-2 bg-cyan-900/30 border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950 transition-colors"><Send size={14} /></button>
+              <button type="button" onClick={handleSendMessage} className="border border-cyan-500 bg-cyan-900/30 p-2 text-cyan-400 transition-colors hover:bg-cyan-500 hover:text-slate-950">
+                <Send size={14} />
+              </button>
             </div>
           </div>
         )}
-        <button onClick={() => setIsChatOpen(!isChatOpen)} className="w-14 h-14 bg-slate-900 border border-cyan-500 text-cyan-400 flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] relative group">
+        <button
+          type="button"
+          aria-expanded={isChatOpen}
+          aria-label={isChatOpen ? "Cerrar asistente" : "Abrir asistente"}
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="relative flex h-14 w-14 items-center justify-center border border-cyan-500 bg-slate-900 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all hover:bg-cyan-500 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 group"
+        >
           {isChatOpen ? <X /> : <MessageCircle size={24} />}
           <div className="absolute inset-0 border border-cyan-400 rounded-full animate-ping opacity-20"></div>
         </button>
       </div>
     </div>
   );
-  }
+}

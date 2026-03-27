@@ -1,109 +1,75 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
+import TicketsPanel from "./TicketsPanel";
+import ServicesPanel from "./ServicesPanel";
 
 export default function AdminDashboard() {
-  const [tickets, setTickets] = useState([]);
+  const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("tickets");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadTickets = async () => {
-      setLoading(true);
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-      const { data, error } = await supabase
-        .from("tickets")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error cargando tickets:", error);
-        setTickets([]);
-      } else {
-        // 🔥 NORMALIZAMOS STATUS
-        setTickets(
-          (data ?? []).map(t => ({
-            ...t,
-            status: t.status || "recibido"
-          }))
-        );
+      if (!session) {
+        navigate("/admin/login", { replace: true });
+        return;
       }
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profile?.role !== "admin") {
+        navigate("/", { replace: true });
+        return;
+      }
+
+      setAuthorized(true);
       setLoading(false);
     };
 
-    loadTickets();
-  }, []);
+    init();
+  }, [navigate]);
 
-  const handleStatusChange = async (ticketId, newStatus) => {
-    // 🟢 1. UPDATE LOCAL INMEDIATO
-    setTickets(prev =>
-      prev.map(ticket =>
-        ticket.id === ticketId
-          ? { ...ticket, status: newStatus }
-          : ticket
-      )
-    );
-
-    // 🟡 2. SYNC CON BACKEND (NO BLOQUEA UI)
-    const { error } = await supabase.functions.invoke(
-      "update-ticket-status",
-      {
-        body: {
-          ticket_id: ticketId,
-          new_status: newStatus
-        }
-      }
-    );
-
-    if (error) {
-      console.error("Error actualizando estado:", error);
-      // opcional: revertir estado si querés
-    }
-  };
+  if (loading || !authorized) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 font-mono">
-      <h1 className="text-2xl mb-6">PANEL_ADMIN</h1>
+    <div className="min-h-screen bg-slate-950 text-white p-4 font-mono">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">
+          Panel de Administración
+        </h1>
 
-      {loading && <p>Cargando tickets...</p>}
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => setTab("tickets")}
+            className={`px-4 py-2 rounded ${
+              tab === "tickets" ? "bg-blue-600" : "bg-slate-800"
+            }`}
+          >
+            Tickets
+          </button>
 
-      {!loading && tickets.length === 0 && (
-        <p>No hay tickets todavía</p>
-      )}
+          <button
+            onClick={() => setTab("services")}
+            className={`px-4 py-2 rounded ${
+              tab === "services" ? "bg-blue-600" : "bg-slate-800"
+            }`}
+          >
+            Servicios internos
+          </button>
+        </div>
 
-      {!loading && tickets.length > 0 && (
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Cliente</th>
-              <th>Servicio</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map(t => (
-              <tr key={t.id}>
-                <td>{t.ticket_code}</td>
-                <td>{t.customer_name}</td>
-                <td>{t.issue_type}</td>
-                <td>
-                  <select
-                    value={t.status}
-                    onChange={(e) =>
-                      handleStatusChange(t.id, e.target.value)
-                    }
-                    className="bg-slate-900 border border-slate-700 rounded px-2 py-1"
-                  >
-                    <option value="recibido">Recibido</option>
-                    <option value="en_proceso">En proceso</option>
-                    <option value="resuelto">Resuelto</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        {tab === "tickets" && <TicketsPanel />}
+        {tab === "services" && <ServicesPanel />}
+      </div>
     </div>
   );
 }
