@@ -10,6 +10,17 @@ Separar la lógica pública de la aplicación y crear un panel de administració
 
 ---
 
+## 🔧 Entorno y verificación
+
+- Node.js `22.12.0` para desarrollo local (`.nvmrc`).
+- Vercel usa Node.js `22.x`, definido en `package.json`.
+- Instalación reproducible: `pnpm install --frozen-lockfile`.
+- Verificación completa: `pnpm verify` (lint y build).
+- El build de Vite se genera en `dist/`.
+- `vercel.json` reescribe las rutas de la SPA a `index.html`, por lo que `/`, `/admin/login` y `/admin` admiten navegación directa.
+
+---
+
 ## 🔹 Refactor de la aplicación
 - Se separó `App.jsx` en:
   - **App.jsx** → Maneja rutas principales usando React Router.
@@ -69,4 +80,3 @@ src/
 ---
 
 ✅ **Estado:** Funcionalidad básica de administración y tickets implementada. Próximos pasos definidos.
-

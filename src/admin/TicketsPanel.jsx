@@ -7,10 +7,6 @@ export default function TicketsPanel() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadTickets();
-  }, []);
-
   // 📦 CARGAR TICKETS
   async function loadTickets() {
     setLoading(true);
@@ -34,6 +30,12 @@ export default function TicketsPanel() {
 
     setLoading(false);
   }
+
+  useEffect(() => {
+    // Initial remote data hydration intentionally updates local component state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadTickets();
+  }, []);
 
   // 🔄 CAMBIO DE ESTADO
   async function handleStatusChange(ticketId, newStatus) {

@@ -34,7 +34,7 @@ const callGemini = async (prompt, systemInstruction = "") => {
       
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error en la respuesta de IA.";
-    } catch (error) {
+    } catch {
       attempt++;
       if (attempt >= maxRetries) return "SISTEMA FUERA DE LÍNEA. INTENTE MÁS TARDE.";
       await new Promise(resolve => setTimeout(resolve, delay));

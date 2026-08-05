@@ -6,3 +6,4 @@ dist/
 *.exe
 # Local Netlify folder
 .netlify
+.codegraph/

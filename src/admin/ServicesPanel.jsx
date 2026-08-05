@@ -31,6 +31,8 @@ export default function ServicesPanel() {
   };
 
   useEffect(() => {
+    // Initial remote data hydration intentionally updates local component state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadServices();
   }, []);
 
